@@ -249,6 +249,205 @@ app.post('/playlist/song', async (req, res) => {
     }
 });
 
+// Users
+
+// Get all users
+// For Testing Purposes
+app.get('/users', async (req, res) => {
+    try {
+        await client.connect();
+
+        const colli = client.db('courseproject').collection('users');
+        const pll = await colli.find({}).toArray();
+
+        res.status(200).send(pll);
+    } catch (error) {
+        console.log(error)
+        res.status(500).send({
+            error: 'Something went wrong',
+            value: error
+        });
+    } finally {
+        await client.close();
+    }
+});
+
+// Creates new user
+app.post("/register", async (req, res) =>{
+    console.log(req.body);
+
+    // Check for empty fields
+    if(!req.body.username || !req.body.email || !req.body.password){
+        res.status(401).send({
+            status: "Bad Request",
+            message: "Some fields are missing: username, email, password"
+        })
+        return        
+    }
+
+    // Check for email
+
+    try{
+        await client.connect();
+
+        const registerUser = {
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password,
+            user_id: uuidv4()
+        }
+
+        // Retrieve Users
+        const colli = client.db('courseproject').collection('users');
+
+        const query = { email: registerUser.email}
+        const user = await colli.findOne(query)
+
+        // Check if user with email already exists
+        if(user){
+            if(user.email == registerUser.email){
+                res.status(401).send({
+                    status: "Authentication error",
+                    message: "User with this email already Exists!"
+                })   
+            }
+            return
+        }else{
+            const insertedUser = await colli.insertOne(registerUser)
+            res.status(200).send({
+                status: "Authentication successfull",
+                message: "User Saved",
+                data: insertedUser
+            })  
+        }
+    }catch(error){
+        console.log(error)
+        res.status(500).send({
+            error: 'Something went wrong',
+            valure: error
+        });
+    }finally {
+        await client.close();
+    }
+
+})
+
+app.post("/login", async (req, res) =>{
+    // Check for empty fields
+    if(!req.body.email || !req.body.password){
+        res.status(401).send({
+            status: "Bad Request",
+            message: "Some fields are missing: email, password"
+        })        
+    }
+
+    try{
+        await client.connect();
+
+        const loginUser = {
+            email: req.body.email,
+            password: req.body.password,
+        }
+
+        // Retrieve Users
+        const colli = client.db('courseproject').collection('users');
+
+        const query = { email: loginUser.email}
+        const user = await colli.findOne(query)
+        
+        // Send back response if user is saved
+        if(user){
+            if(user.password == loginUser.password){
+                res.status(200).send({
+                    status: "Authentication successfull!",
+                    message: "You are logged in!",
+                    data: {
+                        username: user.username,
+                        email: user.email,
+                        user_id: user.user_id,
+                    }
+                })      
+            }else{
+                res.status(401).send({
+                    status: "Authentication error",
+                    message: "Password is incorrect!"
+                })   
+            }
+        }else{
+            // No user found: send back error
+            res.status(401).send({
+                status: "Authentication error",
+                message: "No user with this email has been found! Make sure you register first"
+            })  
+        }
+    }catch(error){
+        console.log(error)
+        res.status(500).send({
+            error: 'Something went wrong',
+            valure: error
+        });
+    }finally {
+        await client.close();
+    }
+    
+})
+
+app.post("/verifyID", async (req, res) =>{
+    // Check for empty and faulty ID
+    if(!req.body.user_id){
+        res.status(401).send({
+            status: "Bad Request",
+            message: "ID is missing"
+        })
+        return        
+    }else{
+        if(!uuidValidate(req.body.user_id)){
+            res.status(401).send({
+                status: "Bad Request",
+                message: "ID is not a valid UUID"
+            })
+            return      
+        }
+    }
+
+    try{  
+        await client.connect();
+
+        // Retrieve Users
+        const colli = client.db('courseproject').collection('users');
+
+        const query = { user_id: req.body.user_id}
+        const user = await colli.findOne(query)
+        
+        // Send back response if user is saved
+        if(user){
+            res.status(200).send({
+                status: "Verified",
+                message: "Your UUID is valid.",
+                data: {
+                    username: user.username,
+                    email: user.email,
+                    user_id: user.user_id,
+                }
+            })      
+        }else{
+            res.status(401).send({
+                status: "Verify error",
+                message: `No user exists with id ${req.body.user_id}`
+            })   
+        }  
+    }catch(error){
+        console.log(error)
+        res.status(500).send({
+            error: 'Something went wrong',
+            valure: error
+        });
+    }finally {
+        await client.close();
+    }
+    
+})
+
 app.listen(port, () => {
     console.log(`API is running at http://localhost:${port}`);
 })
