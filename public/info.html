@@ -12,14 +12,19 @@
         <h1>Course Project api</h1>
     </header>
     <ul class="list">
-        <li>GET / root - </li>
+        <li>GET / - Documentation</li>
         <h3>Playlists</h3>
-        <li>GET / playlists - Get all Playlists</li>
-        <li>GET / playlist?id= - Get Playlist by Id</li>
-        <li>DEL / playlist?id= - Delete Playlist by Id</li>
-        <li>DEL / playlist/song?playlistId=1&songId=1 - Delete Song by Id</li>
+        <li>GET /allplaylists - Get all Playlists (Testing Purposes)</li>
+        <li>GET /playlists?userId=# - Get Playlist From A User</li>
+        <li>GET /playlist?userId=#&playlistId=# - Get One Playlist From A User</li>
+        <li>DEL /playlist?userId=#&playlistId=# - Delete One Playlist From A User</li>
+        <li>DEL /playlist/song?userId=#&playlistId=#&songId=# - Delete Song by Id</li>
+        <li>POST /playlist/song?userId=#&playlistId=#&songId=# - Add Song To Playlist</li>
+        <li>PUT /playlist - Create Playlist</li>
         <h3>Users</h3>
-        <li>GET / users - Get all Users</li>
+        <li>GET /users - Get all Users (Testing Purposes)</li>
+        <li>POST /register - Register User</li>
+        <li>POST /login - Login User</li>
     </ul>
 </body>
 </html>
