@@ -7,7 +7,7 @@ const { v4: uuidv4, validate: uuidValidate} = require('uuid')
 require('dotenv').config()  
 
 const client = new MongoClient(process.env.FINAL_URL);
-const port = 1337;
+const port = process.env.port || 1337;
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -51,7 +51,6 @@ app.get('/playlists', async (req, res) => {
         const colli = client.db('courseproject').collection('playlists');
 
         const query = { user_id: req.query.userId};
-        console.log(query);
 
         const pll = await colli.find(query).toArray();
 
@@ -87,11 +86,7 @@ app.get('/playlist', async (req, res) => {
         const colli = client.db('courseproject').collection('playlists');
 
         const query = { user_id: req.query.userId, playlist_id: req.query.playlistId };
-        console.log(query);
 
-        // const pll = await colli.findOne({
-        //     user_id: req.query.userId, $and: [ {playlist_id: req.query.playlistId}]
-        // });
         const pll = await colli.findOne(query);
 
         if(pll){
@@ -100,7 +95,6 @@ app.get('/playlist', async (req, res) => {
             res.status(400).send('Could not find playlist with id' + req.query.id);
         }
 
-        
     } catch (error) {
         console.log(error)
         res.status(500).send({
@@ -120,7 +114,6 @@ app.delete('/playlist', async (req,res) => {
         const colli = client.db('courseproject').collection('playlists');
 
         const query = { user_id: req.query.userId, playlist_id: req.query.playlistId };
-        console.log(query);
 
         const pll = await colli.deleteOne(query);
 
@@ -274,8 +267,6 @@ app.get('/users', async (req, res) => {
 
 // Creates new user
 app.post("/register", async (req, res) =>{
-    console.log(req.body);
-
     // Check for empty fields
     if(!req.body.username || !req.body.email || !req.body.password){
         res.status(401).send({
@@ -392,6 +383,7 @@ app.post("/login", async (req, res) =>{
     
 })
 
+// For Testing Purposes
 app.post("/verifyID", async (req, res) =>{
     // Check for empty and faulty ID
     if(!req.body.user_id){
